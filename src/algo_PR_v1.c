@@ -175,7 +175,7 @@ int main(int argc, char const *argv[])
 	int stanford = 0;
 
 	if(argc == 3) {
-		if(!strcmp(argv[2], "-stanford"))
+		if(!strcmp(argv[2], "--stanford"))
 			stanford = 1;
 		else {
 			printf("Erreur : L'argument donnée n'est pas reconnu.\n");
@@ -189,7 +189,7 @@ int main(int argc, char const *argv[])
 	// On lit le fichier donnée et on le stock dans la structure matrice décrite en tête du fichier.
 	struct matrice matrice = lecture(argv[1], stanford);
 
-	// Variable permettant de mesurer le temps de calcul total du programme.
+	// Variable permettant de mesurer le temps de calcul du page rank.
 	clock_t debut_t = clock();
 
 	// On applique le calcul du page_rank/

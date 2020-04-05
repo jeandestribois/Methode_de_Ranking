@@ -4,7 +4,7 @@ run_v1_petit: compile
 run_v1_moyen: compile
 	./bin/algo_PR_v1 GraphesWebTest/web_10001.txt
 run_v1_grand: compile
-	./bin/algo_PR_v1 GraphesWebTest/web_Stanford.txt -stanford 
+	./bin/algo_PR_v1 GraphesWebTest/web_Stanford.txt --stanford 
 
 #Compilation :
 compile:

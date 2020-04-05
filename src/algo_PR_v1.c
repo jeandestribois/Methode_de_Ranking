@@ -49,10 +49,7 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 
 	// Lecture des deux premières lignes
 	fscanf(fichier, "%d\n", &matrice.nbr_elem_non_nul);
-	printf("%d\n", matrice.nbr_elem_non_nul);
-
 	fscanf(fichier, "%d\n", &matrice.nbr_lignes);
-	printf("%d\n", matrice.nbr_lignes);
 
 	// Allocation mémoire.
 	matrice.ligne = malloc(sizeof(LIGNE)*matrice.nbr_lignes);
@@ -60,12 +57,12 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 
 	// Lecture de chaques lignes (l'ordre et la numérotation diffèrent
 	// en fonction de si stanford est à 1 ou pas).
+	printf("\nLecture du fichier...\n");
 	for(int i=0; i<matrice.nbr_lignes; i++)
 	{
 		// Lecture des deux premiers champs.
 		fscanf(fichier, "%d %d ", &matrice.ligne[i].num, &matrice.ligne[i].degre);
 		if(stanford) matrice.ligne[i].num--;
-		printf("%d %d ", matrice.ligne[i].num, matrice.ligne[i].degre);
 
 		// Allocation mémoire.
 		matrice.ligne[i].elem = malloc(sizeof(ELEMENT)*matrice.ligne[i].degre);
@@ -79,10 +76,11 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 				matrice.ligne[i].elem[j].dest--;
 			}
 			else fscanf(fichier, "%lf %d ", &matrice.ligne[i].elem[j].proba, &matrice.ligne[i].elem[j].dest);
-			printf("%lf %d ", matrice.ligne[i].elem[j].proba, matrice.ligne[i].elem[j].dest);
 		}
-		printf("\n");
+		printf("\r");
+		printf("%d %%", i*100/matrice.nbr_lignes+1);
 	}
+	printf("\n\n");
 
 	return matrice;
 }
@@ -127,6 +125,7 @@ void page_rank(struct matrice matrice)
 		pio.elem[i].proba = 1.0/pio.degre;
 
 	// Boucle cherchant la convergeance
+	printf("Calcul du page rank :\n");
 	while(eps < abs)
 	{
 		// Initialisation de pin
@@ -158,15 +157,8 @@ void page_rank(struct matrice matrice)
 			abs += tmp;
 			pio.elem[i].proba = pin.elem[i].proba;
 		}
-		printf("Abs = %lf\n", abs);
+		printf("Difference entre 2 itérations : %lf\n", abs);
 	}
-
-	// Affichage de pin
-	/*printf("pin = (");
-	for(int i = 0; i<pin.degre; i++) {
-		printf("%lf ", pin.elem[i].proba);
-	}
-	printf(")\n");*/
 
 	// Libération mémoire de pio et pin
 	quantite_memoire_liberee += sizeof(pio.elem);
@@ -178,9 +170,6 @@ void page_rank(struct matrice matrice)
 /*************PROGRAMME MAIN******************/
 int main(int argc, char const *argv[])
 {
-	// Variable permettant de mesurer le temps de calcul total du programme.
-	clock_t debut_t = clock();
-
 	// Variable stockant 1 ou 0 en fonction de si la matric donnée
 	// est du format d'une matrice de Stanford ou non.
 	int stanford = 0;
@@ -200,18 +189,21 @@ int main(int argc, char const *argv[])
 	// On lit le fichier donnée et on le stock dans la structure matrice décrite en tête du fichier.
 	struct matrice matrice = lecture(argv[1], stanford);
 
-	// On applique 
+	// Variable permettant de mesurer le temps de calcul total du programme.
+	clock_t debut_t = clock();
+
+	// On applique le calcul du page_rank/
 	page_rank(matrice);
+
+	clock_t fin_t = clock();
 
 	// On libère la mémoire allouée pour la matrice.
 	liberation_matrice(matrice);
 
-	clock_t fin_t = clock();
-
-	printf("\nTemps total de calcul en CPU ticks : %lu\n", fin_t - debut_t);
-	printf("Temps total de calcul en ms : %lu\n", (fin_t - debut_t)*1000/CLOCKS_PER_SEC);
-	printf("\nQuantité de memoire allouée manuellement en octets : %d\n", quantite_memoire_allouee);
-	printf("Quantité de memoire libèrée manuellement en octets : %d\n", quantite_memoire_liberee);
+	printf("\nTemps de calcul du page rank en CPU ticks : %lu\n", fin_t - debut_t);
+	printf("Temps de calcul du page rank en ms : %lu\n", (fin_t - debut_t)*1000/CLOCKS_PER_SEC);
+	printf("\nQuantité de memoire allouée dynamiquement en octets : %d\n", quantite_memoire_allouee);
+	printf("Quantité de memoire libèrée dynamiquement en octets : %d\n", quantite_memoire_liberee);
 
 	return 0;
 }

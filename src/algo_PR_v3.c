@@ -101,7 +101,7 @@ void liberation_matrice(struct matrice matrice)
 
 /*************CALCULS*************************/
 
-void pagerank(struct matrice matrice)
+void page_rank(struct matrice matrice)
 {
 	double eps = 0.000001;	// Variable fixant l'écart à atteindre de abs entre deux itération
 	double abs = 1.0; 		// Variable stockant la valeur absolue de pin-pio
@@ -119,12 +119,13 @@ void pagerank(struct matrice matrice)
 	pin.elem = malloc(sizeof(ELEMENT)*pin.degre);
 	quantite_memoire_allouee += sizeof(pin.elem);
 
+
 	// Initialisation de pio
 	for (int i = 0; i < pio.degre; ++i)
 		pio.elem[i].proba = 1.0/pio.degre;
 
 	// Boucle cherchant la convergeance
-	printf("Calcul du page rank :\n\n");
+	printf("Calcul du page rank :\n");
 	while(eps < abs)
 	{
 		// Initialisation de pin
@@ -159,13 +160,6 @@ void pagerank(struct matrice matrice)
 		printf("Difference entre 2 itérations : %lf\n", abs);
 	}
 
-	// Affichage de pin
-	printf("\npin = (");
-	for(int i=0; i<pin.degre; i++) {
-		printf("%lf, ", pin.elem[i].proba);
-	}
-	printf(")\n");
-
 	// Libération mémoire de pio et pin
 	quantite_memoire_liberee += sizeof(pio.elem);
 	free(pio.elem);
@@ -179,11 +173,6 @@ int main(int argc, char const *argv[])
 	// Variable stockant 1 ou 0 en fonction de si la matric donnée
 	// est du format d'une matrice de Stanford ou non.
 	int stanford = 0;
-	// Ces variables permetteront de calculer le temps de calcul et de lecture.
-	clock_t debut_lecture_t, fin_lecture_t, debut_calcul_t, fin_calcul_t;
-	// Cette variable va stocker la matrice du graphe du web donnée.
-	struct matrice matrice;
-
 
 	if(argc == 3) {
 		if(!strcmp(argv[2], "--stanford"))
@@ -195,28 +184,24 @@ int main(int argc, char const *argv[])
 	}
 	else if(argc != 2) {
 		printf("Erreur : Le nombre d'arguments données est incorrect.\n");
-		exit(0);
 	}
 
-	// Lecture
-	debut_lecture_t = clock();
-	matrice = lecture(argv[1], stanford);
-	fin_lecture_t = clock();
+	// On lit le fichier donnée et on le stock dans la structure matrice décrite en tête du fichier.
+	struct matrice matrice = lecture(argv[1], stanford);
 
-	// Calcul du pagerank
-	debut_calcul_t = clock();
-	pagerank(matrice);
-	fin_calcul_t = clock();
+	// Variable permettant de mesurer le temps de calcul du page rank.
+	clock_t debut_t = clock();
+
+	// On applique le calcul du page_rank/
+	page_rank(matrice);
+
+	clock_t fin_t = clock();
 
 	// On libère la mémoire allouée pour la matrice.
 	liberation_matrice(matrice);
 
-	printf("\nTemps de lecture du fichier en CPU ticks : %lu\n", fin_lecture_t - debut_lecture_t);
-	printf("Temps de lecture du fichier en ms : %lu\n", (fin_lecture_t - debut_lecture_t)*1000/CLOCKS_PER_SEC);
-	printf("Temps de calcul du pagerank en CPU ticks : %lu\n", fin_calcul_t - debut_calcul_t);
-	printf("Temps de calcul du pagerank en ms : %lu\n", (fin_calcul_t - debut_calcul_t)*1000/CLOCKS_PER_SEC);
-	printf("\nTemps total de calcul du pagerank en CPU ticks : %lu\n", fin_calcul_t - debut_lecture_t);
-	printf("Temps total de calcul du pagerank en ms : %lu\n", (fin_calcul_t - debut_lecture_t)*1000/CLOCKS_PER_SEC);
+	printf("\nTemps de calcul du page rank en CPU ticks : %lu\n", fin_t - debut_t);
+	printf("Temps de calcul du page rank en ms : %lu\n", (fin_t - debut_t)*1000/CLOCKS_PER_SEC);
 	printf("\nQuantité de memoire allouée dynamiquement en octets : %d\n", quantite_memoire_allouee);
 	printf("Quantité de memoire libèrée dynamiquement en octets : %d\n", quantite_memoire_liberee);
 

@@ -12,16 +12,16 @@ Projet du module de Méthode de Ranking du M1 Informatique de Paris Saclay.
 
 Le sujet imposé est le sujet 5 du fichier se trouvant dans le dossier ressource.
 Il s'agit du calcul du pagerank par la méthode de Gauss Seidel descendant.
-Trois fichiers sources écrit en langage C (chacun construisant un executable) composent se projet :
+Trois fichiers sources écrits en langage C (chacun construisant un executable) composent se projet :
 * Une premiere version implémentant l'algorithme de pagerank en stockant en mémoire toute la matrice représentant le graphe du web.
 * Une deuxième version implémentant l'algorithme de pagerank en ne stockant progressivement qu'une ligne de la matrice représentant le graphe du web.
 * Et une troisième version implémentant l'algorithme de pagerank de la même manière que la deuxième version avec en plus la méthode de Gauss Seidel descendant.
-Chaque version affiche à la fin de l'execution, la mémoire utilisée et le temps de calcul.
+Chaque version affiche à la fin de l'execution, la quantité de mémoire allouée (et libérée) dynamiquement, le temps de calcul et le temps de lecture (seulement pour la première version).
 
 ## Installation
 
 Aucune installation n'est requise.
-Cependant il est nécessaire de posèder gcc pour compiler le programme.s
+Cependant il est nécessaire de posèder gcc pour compiler le programme.
 
 ## Utilisation
 

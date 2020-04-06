@@ -53,7 +53,7 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 
 	// Allocation mémoire.
 	matrice.ligne = malloc(sizeof(LIGNE)*matrice.nbr_lignes);
-	quantite_memoire_allouee += sizeof(matrice.ligne);
+	quantite_memoire_allouee += sizeof(LIGNE)*matrice.nbr_lignes;
 
 	// Lecture de chaques lignes (l'ordre et la numérotation diffèrent
 	// en fonction de si stanford est à 1 ou pas).
@@ -66,7 +66,7 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 
 		// Allocation mémoire.
 		matrice.ligne[i].elem = malloc(sizeof(ELEMENT)*matrice.ligne[i].degre);
-		quantite_memoire_allouee += sizeof(matrice.ligne[i].elem);
+		quantite_memoire_allouee += sizeof(ELEMENT)*matrice.ligne[i].degre;
 
 		// Lecture de chaques éléments d'une ligne.
 		for (int j=0; j<matrice.ligne[i].degre; j++)
@@ -92,10 +92,10 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 void liberation_matrice(struct matrice matrice)
 {
 	for(int i=0; i<matrice.nbr_lignes; i++) {
-		quantite_memoire_liberee += sizeof(matrice.ligne[i].elem);
+		quantite_memoire_liberee += sizeof(ELEMENT)*matrice.ligne[i].degre;
 		free(matrice.ligne[i].elem);
 	}
-	quantite_memoire_liberee += sizeof(matrice.ligne);
+	quantite_memoire_liberee += sizeof(LIGNE)*matrice.nbr_lignes;
 	free(matrice.ligne);
 }
 
@@ -114,11 +114,11 @@ void pagerank(struct matrice matrice)
 	// Allocation mémoire de pio et pin
 	pio.num = 0, pio.degre = matrice.nbr_lignes;
 	pio.elem = malloc(sizeof(ELEMENT)*pio.degre);
-	quantite_memoire_allouee += sizeof(pio.elem);
+	quantite_memoire_allouee += sizeof(ELEMENT)*pio.degre;
 
 	pin.num = 0, pin.degre = matrice.nbr_lignes;
 	pin.elem = malloc(sizeof(ELEMENT)*pin.degre);
-	quantite_memoire_allouee += sizeof(pin.elem);
+	quantite_memoire_allouee += sizeof(ELEMENT)*pin.degre;
 
 	// Initialisation de pio
 	for (int i = 0; i < pio.degre; ++i)
@@ -168,9 +168,9 @@ void pagerank(struct matrice matrice)
 	printf(")\n");
 
 	// Libération mémoire de pio et pin
-	quantite_memoire_liberee += sizeof(pio.elem);
+	quantite_memoire_liberee += sizeof(ELEMENT)*pio.degre;
 	free(pio.elem);
-	quantite_memoire_liberee += sizeof(pin.elem);
+	quantite_memoire_liberee += sizeof(ELEMENT)*pio.degre;
 	free(pin.elem);
 }
 

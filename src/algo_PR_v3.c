@@ -18,6 +18,9 @@ struct element
 };typedef struct element ELEMENT;
 
 // Représente une ligne dans une matrice.
+// On allouera autant d'élément qu'il y a de ligne
+// car on ne peut pas dépasser ce nombre d'élément et ça nous
+// permettra de ne pas à avoir besoin de faire des realloc à chaque itération.
 struct ligne
 {
 	int num;
@@ -25,22 +28,31 @@ struct ligne
 	ELEMENT *elem;
 };typedef struct ligne LIGNE;
 
-// Représente une matrice.
+// Représente une matrice. Une matrice ne contient plus qu'une ligne car celle-ci sera
+// réalloué à chaque itération.
 struct matrice
 {
 	int nbr_elem_non_nul;
 	int nbr_lignes;
-	LIGNE *ligne;
+	LIGNE ligne;
 };
 
-/*************FONCTION DE LECTURE************/
 
-struct matrice lecture(char const *nom_fichier, int stanford)
+/*************LIBERATION MEMOIRE**************/
+
+void liberation_matrice(struct matrice matrice)
 {
-	struct matrice matrice;
+	quantite_memoire_liberee += sizeof(matrice.ligne.elem);
+	free(matrice.ligne.elem);
+}
 
+
+/*************FONCTION DE LECTURE DE FICHIER************/
+
+FILE *premiere_lecture(struct matrice *matrice, char const *nom_fichier)
+{
 	// Ouverture du fichier.
-	FILE *fichier = fopen(nom_fichier, 	"r");
+	FILE *fichier = fopen(nom_fichier, "r");
 	if(fichier == NULL)
 	{
 		printf("Erreur : Le fichier renseigné est introuvable\n");
@@ -48,60 +60,46 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 	}
 
 	// Lecture des deux premières lignes
-	fscanf(fichier, "%d\n", &matrice.nbr_elem_non_nul);
-	fscanf(fichier, "%d\n", &matrice.nbr_lignes);
+	fscanf(fichier, "%d\n", &matrice->nbr_elem_non_nul);
+	fscanf(fichier, "%d\n", &matrice->nbr_lignes);
 
 	// Allocation mémoire.
-	matrice.ligne = malloc(sizeof(LIGNE)*matrice.nbr_lignes);
-	quantite_memoire_allouee += sizeof(matrice.ligne);
+	matrice->ligne.elem = malloc(sizeof(ELEMENT)*matrice->nbr_lignes);
+	quantite_memoire_allouee += sizeof(matrice->ligne.elem);
 
-	// Lecture de chaques lignes (l'ordre et la numérotation diffèrent
-	// en fonction de si stanford est à 1 ou pas).
-	printf("\nLecture du fichier...\n");
-	for(int i=0; i<matrice.nbr_lignes; i++)
-	{
-		// Lecture des deux premiers champs.
-		fscanf(fichier, "%d %d ", &matrice.ligne[i].num, &matrice.ligne[i].degre);
-		if(stanford) matrice.ligne[i].num--;
-
-		// Allocation mémoire.
-		matrice.ligne[i].elem = malloc(sizeof(ELEMENT)*matrice.ligne[i].degre);
-		quantite_memoire_allouee += sizeof(matrice.ligne[i].elem);
-
-		// Lecture de chaques éléments d'une ligne.
-		for (int j=0; j<matrice.ligne[i].degre; j++)
-		{
-			if(stanford) {
-				fscanf(fichier, "%d %lf ", &matrice.ligne[i].elem[j].dest, &matrice.ligne[i].elem[j].proba);
-				matrice.ligne[i].elem[j].dest--;
-			}
-			else fscanf(fichier, "%lf %d ", &matrice.ligne[i].elem[j].proba, &matrice.ligne[i].elem[j].dest);
-		}
-		printf("\r");
-		printf("%d %%", i*100/matrice.nbr_lignes+1);
-	}
-	printf("\n\n");
-
-	return matrice;
+	return fichier;
 }
 
-
-/*************LIBERATION MEMOIRE**************/
-
-void liberation_matrice(struct matrice matrice)
+FILE *lecture_ligne(struct matrice *matrice, FILE *fichier, int stanford)
 {
-	for(int i=0; i<matrice.nbr_lignes; i++) {
-		quantite_memoire_liberee += sizeof(matrice.ligne[i].elem);
-		free(matrice.ligne[i].elem);
+	// Lecture d'une ligne (l'ordre et la numérotation diffèrent
+	// en fonction de si stanford est à 1 ou pas).
+	// Lecture des deux premiers champs :
+	fscanf(fichier, "%d %d ", &matrice->ligne.num, &matrice->ligne.degre);
+	if(stanford) matrice->ligne.num--;
+
+	// Lecture de chaques éléments d'une ligne.
+	for (int i=0; i<matrice->ligne.degre; i++) {
+		if(stanford) {
+			fscanf(fichier, "%d %lf ", &matrice->ligne.elem[i].dest, &matrice->ligne.elem[i].proba);
+			matrice->ligne.elem[i].dest--;
+		}
+		else fscanf(fichier, "%lf %d ", &matrice->ligne.elem[i].proba, &matrice->ligne.elem[i].dest);
 	}
-	quantite_memoire_liberee += sizeof(matrice.ligne);
-	free(matrice.ligne);
+
+	// Si on se trouve à la fin du fichier, on remet le curseur du fichier deux lignes apres le début.
+	if(matrice->nbr_lignes == matrice->ligne.num+1) {
+		rewind(fichier);
+		fscanf(fichier, "%d\n%d\n", &matrice->nbr_elem_non_nul, &matrice->nbr_lignes);
+	}
+
+	return fichier;
 }
 
 
 /*************CALCULS*************************/
 
-void page_rank(struct matrice matrice)
+void pagerank(struct matrice matrice, FILE *fichier, int stanford)
 {
 	double eps = 0.000001;	// Variable fixant l'écart à atteindre de abs entre deux itération
 	double abs = 1.0; 		// Variable stockant la valeur absolue de pin-pio
@@ -119,37 +117,34 @@ void page_rank(struct matrice matrice)
 	pin.elem = malloc(sizeof(ELEMENT)*pin.degre);
 	quantite_memoire_allouee += sizeof(pin.elem);
 
-
 	// Initialisation de pio
 	for (int i = 0; i < pio.degre; ++i)
 		pio.elem[i].proba = 1.0/pio.degre;
 
 	// Boucle cherchant la convergeance
-	printf("Calcul du page rank :\n");
-	while(eps < abs)
-	{
+	printf("\nCalcul du page rank :\n");
+	while(eps < abs) {
 		// Initialisation de pin
 		for (int i = 0; i < pin.degre; ++i)
 			pin.elem[i].proba = 0.0;
 
 		// Calcul du pin
-		for (int i = 0; i < matrice.nbr_lignes; ++i)
-		{
-			for(int j = 0; j < matrice.ligne[i].degre; j++)
-			{
+		for (int i = 0; i < matrice.nbr_lignes; ++i) {
+			// Lecture de la prochaine ligne
+			fichier = lecture_ligne(&matrice, fichier, stanford);
+			for(int j = 0; j < matrice.ligne.degre; j++) {
 				// P[dest] += P[i->j] * P[i] 
-				pin.elem[matrice.ligne[i].elem[j].dest].proba += matrice.ligne[i].elem[j].proba * pio.elem[i].proba;
+				pin.elem[matrice.ligne.elem[j].dest].proba += matrice.ligne.elem[j].proba * pio.elem[i].proba;
 			}
 		}
 		// On reparcours une fois pin pour rajouter le surfeur aleatoire.
 		for(int i = 0; i<pin.degre; i++) {
 			pin.elem[i].proba = (1-alpha)/pin.degre + alpha*pin.elem[i].proba;
 		}
-
-		// Calcul de la valeur absolue
+		
+		// Calcul de la valeur absolue et on effectue pio = pin
 		abs = 0.0;
-		for(int i = 0; i < pin.degre; i++)
-		{
+		for(int i = 0; i < pin.degre; i++) {
 			tmp = pin.elem[i].proba - pio.elem[i].proba;
 			if(tmp<0)
 				tmp = -tmp;
@@ -159,6 +154,13 @@ void page_rank(struct matrice matrice)
 		}
 		printf("Difference entre 2 itérations : %lf\n", abs);
 	}
+
+	// Affichage de pin
+	printf("\npin = (");
+	for(int i=0; i<pin.degre; i++) {
+		printf("%lf, ", pin.elem[i].proba);
+	}
+	printf(")\n");
 
 	// Libération mémoire de pio et pin
 	quantite_memoire_liberee += sizeof(pio.elem);
@@ -173,7 +175,13 @@ int main(int argc, char const *argv[])
 	// Variable stockant 1 ou 0 en fonction de si la matric donnée
 	// est du format d'une matrice de Stanford ou non.
 	int stanford = 0;
+	// Ces variables permetteront de calculer le temps de calcul.
+	clock_t debut_calcul_t, fin_calcul_t;
+	// Cette variable va stocker une ligne de la matrice du graphe du web donnée.
+	struct matrice matrice;
+	FILE *fichier = NULL;
 
+	// Verification de l'entree donnée
 	if(argc == 3) {
 		if(!strcmp(argv[2], "--stanford"))
 			stanford = 1;
@@ -184,24 +192,23 @@ int main(int argc, char const *argv[])
 	}
 	else if(argc != 2) {
 		printf("Erreur : Le nombre d'arguments données est incorrect.\n");
+		exit(0);
 	}
 
-	// On lit le fichier donnée et on le stock dans la structure matrice décrite en tête du fichier.
-	struct matrice matrice = lecture(argv[1], stanford);
+	// Première lecture
+	fichier = premiere_lecture(&matrice, argv[1]);
 
-	// Variable permettant de mesurer le temps de calcul du page rank.
-	clock_t debut_t = clock();
-
-	// On applique le calcul du page_rank/
-	page_rank(matrice);
-
-	clock_t fin_t = clock();
+	// Calcul du pagerank
+	debut_calcul_t = clock();
+	pagerank(matrice, fichier, stanford);
+	fin_calcul_t = clock();
 
 	// On libère la mémoire allouée pour la matrice.
 	liberation_matrice(matrice);
+	fclose(fichier);
 
-	printf("\nTemps de calcul du page rank en CPU ticks : %lu\n", fin_t - debut_t);
-	printf("Temps de calcul du page rank en ms : %lu\n", (fin_t - debut_t)*1000/CLOCKS_PER_SEC);
+	printf("\nTemps de calcul du pagerank en CPU ticks : %lu\n", fin_calcul_t - debut_calcul_t);
+	printf("Temps de calcul du pagerank en ms : %lu\n", (fin_calcul_t - debut_calcul_t)*1000/CLOCKS_PER_SEC);
 	printf("\nQuantité de memoire allouée dynamiquement en octets : %d\n", quantite_memoire_allouee);
 	printf("Quantité de memoire libèrée dynamiquement en octets : %d\n", quantite_memoire_liberee);
 

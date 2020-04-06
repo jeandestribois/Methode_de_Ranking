@@ -82,6 +82,7 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 	}
 	printf("\n\n");
 
+	fclose(fichier);
 	return matrice;
 }
 

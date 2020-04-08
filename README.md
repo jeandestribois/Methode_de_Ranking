@@ -29,4 +29,5 @@ Un fichier Makefile est présent dans le projet permettant d'automatiser l'utili
 * Pour la compilation entrez : "make compile".
 * Pour l'execution entrez par exemple : "make run_v3_grand" pour executer la version 3 avec un grand graphe du web (il existe 3 tailles de matrice : petite, moyen, grand).
 * Si vous souhaitez executer par vous même une version en donnant un graphe du web que vous souhaitez, entrez par exemple : "./bin/algo_PR_v3 le_fichier_souhaité". Il est néssaire de rajouter l'option "--stanford" à la fin de la commande si votre fichier a un format du type du graphe de Stanford. En effet cela dépend de l'ordre et la numérotation donné dans le fichier.
+Si toute l'execution se passe bien, un fichier sera généré dans le dossier resultats contenant le résultat du ranking de la matrice donnée pour l'execution.
 

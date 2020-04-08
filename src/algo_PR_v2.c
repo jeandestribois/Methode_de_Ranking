@@ -6,8 +6,8 @@
 /*********
 CONSTANTES
 *********/
-
 #define fichier_resultat "resultats/resultats_v2.txt"
+
 
 /*****************
 VARIABLES GLOBALES
@@ -17,13 +17,13 @@ int quantite_memoire_allouee = 0;
 int quantite_memoire_liberee = 0;
 int nbr_iterations_convergence = 0;
 
+
 /************************
 DEFINITION DES STRUCTURES
 ************************/
 
 // Représente un élement dans une matrice.
-struct element
-{
+struct element {
 	int dest;
 	double proba;
 };typedef struct element ELEMENT;
@@ -32,8 +32,7 @@ struct element
 // On allouera autant d'élément qu'il y a de ligne
 // car on ne peut pas dépasser ce nombre d'élément et ça nous
 // permettra de ne pas à avoir besoin de faire des realloc à chaque itération.
-struct ligne
-{
+struct ligne {
 	int num;
 	int degre;
 	ELEMENT *elem;
@@ -41,8 +40,7 @@ struct ligne
 
 // Représente une matrice. Une matrice ne contient plus qu'une ligne car celle-ci sera
 // réalloué à chaque itération.
-struct matrice
-{
+struct matrice {
 	int nbr_elem_non_nul;
 	int nbr_lignes;
 	LIGNE ligne;
@@ -196,8 +194,7 @@ LIGNE pagerank(struct matrice matrice, FILE *fichier, int stanford) {
 /*************
 PROGRAMME MAIN
 *************/
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
 	// Variable stockant 1 ou 0 en fonction de si la matric donnée
 	// est du format d'une matrice de Stanford ou non.
 	int stanford = 0;

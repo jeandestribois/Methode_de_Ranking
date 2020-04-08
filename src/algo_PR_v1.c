@@ -6,7 +6,6 @@
 /*********
 CONSTANTES
 *********/
-
 #define fichier_resultat "resultats/resultats_v1.txt"
 
 
@@ -24,23 +23,20 @@ DEFINITION DES STRUCTURES
 ************************/
 
 // Représente un élement dans une matrice.
-struct element
-{
+struct element {
 	int dest;
 	double proba;
 };typedef struct element ELEMENT;
 
 // Représente une ligne dans une matrice.
-struct ligne
-{
+struct ligne {
 	int num;
 	int degre;
 	ELEMENT *elem;
 };typedef struct ligne LIGNE;
 
 // Représente une matrice.
-struct matrice
-{
+struct matrice {
 	int nbr_elem_non_nul;
 	int nbr_lignes;
 	LIGNE *ligne;
@@ -51,8 +47,7 @@ struct matrice
 LIBERATION MEMOIRE
 *****************/
 
-void liberation_matrice(struct matrice matrice)
-{
+void liberation_matrice(struct matrice matrice) {
 	for(int i=0; i<matrice.nbr_lignes; i++) {
 		quantite_memoire_liberee += sizeof(ELEMENT)*matrice.ligne[i].degre;
 		free(matrice.ligne[i].elem);
@@ -210,7 +205,7 @@ int main(int argc, char const *argv[]) {
 	// Cette variable va stocker la matrice du graphe du web donnée.
 	struct matrice matrice;
 
-
+	// Verification de l'entree.
 	if(argc == 3) {
 		if(!strcmp(argv[2], "--stanford"))
 			stanford = 1;

@@ -3,31 +3,10 @@
 #include <string.h>
 #include <time.h>
 
-/*
-NORMAL :
-for i de 0 à nbrLigne
-	for j  de 0 à degreEntrant de i
-		pin[i] += pio[j]*G[j, i]
-
-NORMAL + GAUSS-SIEDEL :
-for i de nbreLigne à 0
-	for j de 0 à i
-		pin[i] += pio[j]*G[j,i]
-	for j de i à nbreLigne
-		pin[i] += pin[j]*G[j,i]
-
-MA VERSION :
-for i de 0 à nbrLigne
-	for j de 0 à degreSortant
-		pin[ref[j] = pio[i] * G[i,ref[j]]
-
-MA VERSION + GAUSS+SIEDEL : impossible.
-*/
 
 /*********
 CONSTANTES
 *********/
-
 #define fichier_resultat "resultats/resultats_v3.txt"
 
 
@@ -124,8 +103,7 @@ struct matrice lecture(char const *nom_fichier, int stanford) {
 
 	// Ouverture du fichier.
 	FILE *fichier = fopen(nom_fichier, 	"r");
-	if(fichier == NULL)
-	{
+	if(fichier == NULL) {
 		printf("Erreur : Le fichier renseigné est introuvable\n");
 		exit(0);
 	}
@@ -143,15 +121,13 @@ struct matrice lecture(char const *nom_fichier, int stanford) {
 
 	// Lecture de chaques lignes (l'ordre et la numérotation diffèrent
 	// en fonction de si stanford est à 1 ou pas).
-	for(int i=0; i<matrice.nbr_lignes; i++)
-	{
+	for(int i=0; i<matrice.nbr_lignes; i++)	{
 		// Lecture des deux premiers champs.
 		fscanf(fichier, "%d %d ", &matrice.ligne[i].num, &degre);
 		if(stanford) matrice.ligne[i].num--;
 
 		// Lecture de chaques éléments d'une ligne.
-		for (int j=0; j<degre; j++)
-		{
+		for (int j=0; j<degre; j++) {
 			// On crée un élément à la ligne destination.
 			if(stanford) {
 				fscanf(fichier, "%d %lf ", &dest, &proba);
@@ -192,8 +168,7 @@ void ecriture_resultat(double *pin, int taille) {
 CALCUL DU PAGERANK
 *****************/
 
-double *pagerank(struct matrice matrice)
-{
+double *pagerank(struct matrice matrice) {
 	double eps = 0.000001;	// Variable fixant l'écart à atteindre de abs entre deux itération
 	double abs = 1.0; 		// Variable stockant la valeur absolue de pin-pio
 	double tmp;				// Variable temporaire permattant d'inverser abs (si négative)
@@ -256,8 +231,7 @@ double *pagerank(struct matrice matrice)
 /*************
 PROGRAMME MAIN
 *************/
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
 	// Variable stockant 1 ou 0 en fonction de si la matric donnée
 	// est du format d'une matrice de Stanford ou non.
 	int stanford = 0;
@@ -266,7 +240,7 @@ int main(int argc, char const *argv[])
 	// Cette variable va stocker la matrice du graphe du web donnée.
 	struct matrice matrice;
 
-
+	// Verification de l'entrée donnée
 	if(argc == 3) {
 		if(!strcmp(argv[2], "--stanford"))
 			stanford = 1;

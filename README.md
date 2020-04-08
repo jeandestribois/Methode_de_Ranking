@@ -15,8 +15,8 @@ Il s'agit du calcul du pagerank par la méthode de Gauss Seidel descendant.
 Trois fichiers sources écrits en langage C (chacun construisant un executable) composent se projet :
 * Une premiere version implémentant l'algorithme de pagerank en stockant en mémoire tous les éléments non nuls de la matrice représentant le graphe du web.
 * Une deuxième version implémentant l'algorithme de pagerank en ne stockant progressivement qu'une ligne de la matrice représentant le graphe du web. Celle-ci est beaucoup plus lente à calculer le pagerank mais est bien moins coûteuse en mémoire que le précédent.
-* Et une troisième version implémentant l'algorithme de pagerank de la même manière que la deuxième version avec en plus la méthode de Gauss Seidel descendant.
-Chaque version affiche à la fin de l'execution, la quantité de mémoire allouée (et libérée) dynamiquement, le temps de calcul et le temps de lecture (seulement pour la première version).
+* Et une troisième version implémentant l'algorithme de pagerank avec une structure de donnée pour stocker la matrice différente des deux version précédente : on stock maintenant pour un élément, les éléments qui ont un lien vers celui-ci. Alors que pour les deux versions précédente on stockait pour un élément, ses liens vers les autres éléments.
+Chaque version affiche à la fin de l'execution, le nombre d'itération nécéssaire, la quantité de mémoire allouée (et libérée) dynamiquement, le temps de calcul et le temps de lecture (seulement pour la première et la troisième version).
 
 ## Installation
 

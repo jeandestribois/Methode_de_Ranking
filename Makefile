@@ -29,3 +29,4 @@ compile:
 # Clean :
 clean:
 	rm -f bin/*
+	rm -f resultats/*

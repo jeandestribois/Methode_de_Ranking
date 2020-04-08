@@ -3,12 +3,25 @@
 #include <string.h>
 #include <time.h>
 
-/************VARIABLES GLOBALES*******************/
+/*********
+CONSTANTES
+*********/
+
+#define fichier_resultat "resultats/resultats_v1.txt"
+
+
+/*****************
+VARIABLES GLOBALES
+*****************/
 
 int quantite_memoire_allouee = 0;
 int quantite_memoire_liberee = 0;
+int nbr_iterations_convergence = 0;
 
-/************DEFINITION DES STRUCTURES************/
+
+/************************
+DEFINITION DES STRUCTURES
+************************/
 
 // Représente un élement dans une matrice.
 struct element
@@ -33,7 +46,25 @@ struct matrice
 	LIGNE *ligne;
 };
 
-/*************FONCTION DE LECTURE************/
+
+/*****************
+LIBERATION MEMOIRE
+*****************/
+
+void liberation_matrice(struct matrice matrice)
+{
+	for(int i=0; i<matrice.nbr_lignes; i++) {
+		quantite_memoire_liberee += sizeof(ELEMENT)*matrice.ligne[i].degre;
+		free(matrice.ligne[i].elem);
+	}
+	quantite_memoire_liberee += sizeof(LIGNE)*matrice.nbr_lignes;
+	free(matrice.ligne);
+}
+
+
+/*********************************
+FONCTIONS DE LECTURE ET D'ECRITURE
+*********************************/
 
 struct matrice lecture(char const *nom_fichier, int stanford)
 {
@@ -86,23 +117,27 @@ struct matrice lecture(char const *nom_fichier, int stanford)
 	return matrice;
 }
 
-
-/*************LIBERATION MEMOIRE**************/
-
-void liberation_matrice(struct matrice matrice)
-{
-	for(int i=0; i<matrice.nbr_lignes; i++) {
-		quantite_memoire_liberee += sizeof(ELEMENT)*matrice.ligne[i].degre;
-		free(matrice.ligne[i].elem);
+void ecriture_resultat(LIGNE pin) {
+	FILE *fichier = fopen(fichier_resultat, "w+");
+	if(fichier == NULL) {
+		printf("Erreur : Il est impossible d'ecrire dans le fichier %s\n", fichier_resultat);
 	}
-	quantite_memoire_liberee += sizeof(LIGNE)*matrice.nbr_lignes;
-	free(matrice.ligne);
+	else {
+		fprintf(fichier, "(%lf", pin.elem[0].proba);
+		for(int i = 1; i<pin.degre; i++) {
+			fprintf(fichier, ", %lf", pin.elem[i].proba);
+		}
+		fprintf(fichier, ")\n");
+		fclose(fichier);
+	}
 }
 
 
-/*************CALCULS*************************/
+/*****************
+CALCUL DU PAGERANK
+*****************/
 
-void pagerank(struct matrice matrice)
+LIGNE pagerank(struct matrice matrice)
 {
 	double eps = 0.000001;	// Variable fixant l'écart à atteindre de abs entre deux itération
 	double abs = 1.0; 		// Variable stockant la valeur absolue de pin-pio
@@ -126,19 +161,17 @@ void pagerank(struct matrice matrice)
 
 	// Boucle cherchant la convergeance
 	printf("Calcul du page rank :\n\n");
-	while(eps < abs)
-	{
+	while(eps < abs) {
+		nbr_iterations_convergence++;
 		// Initialisation de pin
 		for (int i = 0; i < pin.degre; ++i)
 			pin.elem[i].proba = 0.0;
 
 		// Calcul du pin
-		for (int i = 0; i < matrice.nbr_lignes; ++i)
-		{
-			for(int j = 0; j < matrice.ligne[i].degre; j++)
-			{
+		for (int i = 0; i < matrice.nbr_lignes; ++i) {
+			for(int j = 0; j < matrice.ligne[i].degre; j++) {
 				// P[dest] += P[i->j] * P[i] 
-				pin.elem[matrice.ligne[i].elem[j].dest].proba += matrice.ligne[i].elem[j].proba * pio.elem[i].proba;
+				pin.elem[matrice.ligne[i].elem[j].dest].proba += pio.elem[i].proba * matrice.ligne[i].elem[j].proba;
 			}
 		}
 		// On reparcours une fois pin pour rajouter le surfeur aleatoire.
@@ -148,35 +181,27 @@ void pagerank(struct matrice matrice)
 
 		// Calcul de la valeur absolue
 		abs = 0.0;
-		for(int i = 0; i < pin.degre; i++)
-		{
+		for(int i = 0; i < pin.degre; i++) {
 			tmp = pin.elem[i].proba - pio.elem[i].proba;
-			if(tmp<0)
-				tmp = -tmp;
-
+			if(tmp<0) tmp = -tmp;
 			abs += tmp;
+			// On en profite pour donner la valeur de pin à pio.
 			pio.elem[i].proba = pin.elem[i].proba;
 		}
 		printf("Difference entre 2 itérations : %lf\n", abs);
 	}
 
-	// Affichage de pin
-	printf("\npin = (");
-	for(int i=0; i<pin.degre; i++) {
-		printf("%lf, ", pin.elem[i].proba);
-	}
-	printf(")\n");
-
 	// Libération mémoire de pio et pin
 	quantite_memoire_liberee += sizeof(ELEMENT)*pio.degre;
 	free(pio.elem);
-	quantite_memoire_liberee += sizeof(ELEMENT)*pio.degre;
-	free(pin.elem);
+
+	return pin;
 }
 
-/*************PROGRAMME MAIN******************/
-int main(int argc, char const *argv[])
-{
+/*************
+PROGRAMME MAIN
+*************/
+int main(int argc, char const *argv[]) {
 	// Variable stockant 1 ou 0 en fonction de si la matric donnée
 	// est du format d'une matrice de Stanford ou non.
 	int stanford = 0;
@@ -206,12 +231,19 @@ int main(int argc, char const *argv[])
 
 	// Calcul du pagerank
 	debut_calcul_t = clock();
-	pagerank(matrice);
+	LIGNE pin = pagerank(matrice);
 	fin_calcul_t = clock();
+
+	// Ecriture de pin dans le fichier dont le nom est definit en constante et liberation memoire de pin.
+	ecriture_resultat(pin);
+	quantite_memoire_liberee += sizeof(ELEMENT)*matrice.nbr_lignes;
+	free(pin.elem);
 
 	// On libère la mémoire allouée pour la matrice.
 	liberation_matrice(matrice);
 
+	printf("\n*******************************************\n");
+	printf("\nNombre d'iterations pour la convergeance : %d\n", nbr_iterations_convergence);
 	printf("\nTemps de lecture du fichier en CPU ticks : %lu\n", fin_lecture_t - debut_lecture_t);
 	printf("Temps de lecture du fichier en ms : %lu\n", (fin_lecture_t - debut_lecture_t)*1000/CLOCKS_PER_SEC);
 	printf("Temps de calcul du pagerank en CPU ticks : %lu\n", fin_calcul_t - debut_calcul_t);

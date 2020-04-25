@@ -7,7 +7,7 @@
 /*********
 CONSTANTES
 *********/
-#define fichier_resultat "resultats/resultats_v3.txt"
+#define fichier_resultat "resultats/resultats_v4.txt"
 
 
 /*****************
@@ -175,6 +175,7 @@ double *pagerank(struct matrice matrice) {
 	double alpha = 0.85;	// Variable stockant la probabilité de rester sur une page pour le surfeur aléatoire
 	double *pio, *pin;		// Pin stockera le ranking d'une itération et pio celui de l'itération précédente.
 	ELEMENT *elem_parcours;	// Cette variable nous permettera de parcourir la liste d'élément pour chaque ligne.
+	double somme_renormalisation = 0; // Cette variable stockant la somme des elements de pin pour la renormalisation
 
 	// Allocation mémoire de pio et pin
 	pio = malloc(sizeof(double)*matrice.nbr_lignes);
@@ -192,8 +193,9 @@ double *pagerank(struct matrice matrice) {
 	while(eps < abs) {
 		nbr_iteration_convergence++;
 
-		// Initialisation de abs
+		// Initialisation de abs et de somme_renormalisation
 		abs = 0.0;
+		somme_renormalisation = 0;
 
 		// Calcul du pin
 		for (int i = 0; i < matrice.nbr_lignes; ++i) {
@@ -202,19 +204,28 @@ double *pagerank(struct matrice matrice) {
 
 			elem_parcours = matrice.ligne[i].elem;
 			while(elem_parcours != NULL) {
-				pin[i] += pio[elem_parcours->prov]*elem_parcours->proba;
+				// Si on a deja calculé pin[j] on utilise le pin[j] qu'on vient de calculer
+				if(elem_parcours->prov < i) 
+					pin[i] += pin[elem_parcours->prov]*elem_parcours->proba;
+				// Sinon on utilise le pin[j] de l'itération précédente (pio[j])
+				else 
+					pin[i] += pio[elem_parcours->prov]*elem_parcours->proba;
 				elem_parcours = elem_parcours->suiv;
 			}
 			// Ajout du surfeur aléatoire.
 			pin[i] = (1-alpha)/matrice.nbr_lignes + alpha*pin[i];
-
+			// Calcul de la somme des éléments de pin
+			somme_renormalisation += pin[i];
+		}
+		// On renormalise pin, on en profite
+		// pour calculer la valeur absolue et donner la valeur de pin à pio.
+		for (int i = 0; i < matrice.nbr_lignes; ++i) {
+			// Renormalisation
+			pin[i] = pin[i]/somme_renormalisation;
 			// Calcul de la valeur absolue
 			tmp = pin[i] - pio[i];
 			if(tmp<0) tmp = -tmp;
 			abs += tmp;
-		}
-		// On donne la valeur de pin à pio.
-		for (int i = 0; i < matrice.nbr_lignes; ++i) {
 			pio[i] = pin[i];
 		}
 		printf("Difference entre 2 itérations : %lf\n", abs);

@@ -238,7 +238,7 @@ int main(int argc, char const *argv[]) {
 	printf("\n*******************************************\n");
 	printf("\nNombre d'iterations pour la convergeance : %d\n", nbr_iterations_convergence);
 	printf("\nTemps de calcul du pagerank en CPU ticks : %lu\n", fin_calcul_t - debut_calcul_t);
-	printf("Temps de calcul du pagerank en ms : %lu\n", (fin_calcul_t - debut_calcul_t)*1000/CLOCKS_PER_SEC);
+	printf("Temps de calcul du pagerank en ms : %lf\n", (double)(fin_calcul_t - debut_calcul_t)*1000/CLOCKS_PER_SEC);
 	printf("\nQuantité de memoire allouée dynamiquement en octets : %d\n", quantite_memoire_allouee);
 	printf("Quantité de memoire libèrée dynamiquement en octets : %d\n", quantite_memoire_liberee);
 

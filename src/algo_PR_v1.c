@@ -165,7 +165,7 @@ LIGNE pagerank(struct matrice matrice)
 		// Calcul du pin
 		for (int i = 0; i < matrice.nbr_lignes; ++i) {
 			for(int j = 0; j < matrice.ligne[i].degre; j++) {
-				// P[dest] += P[i->j] * P[i] 
+				// P[dest] += G[i->j] * P[i] 
 				pin.elem[matrice.ligne[i].elem[j].dest].proba += pio.elem[i].proba * matrice.ligne[i].elem[j].proba;
 			}
 		}

@@ -29,6 +29,8 @@ run_v4_grand: compile
 
 #Compilation :
 compile:
+	mkdir -p bin
+	mkdir -p resultats
 	gcc -Wall src/algo_PR_v1.c -o bin/algo_PR_v1
 	gcc -Wall src/algo_PR_v2.c -o bin/algo_PR_v2
 	gcc -Wall src/algo_PR_v3.c -o bin/algo_PR_v3

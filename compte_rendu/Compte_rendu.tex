@@ -45,7 +45,7 @@ Une fois la version 3 fini, nous nous sommes intéressés au calcul du pagerank 
 Le projet contient un Makefile permettant d'automatiser la compilation et les différentes exécution du programme. Il contient un fichier README.md dans lequel l'utilisation du programme est détaillé.
 
 \section{Interprétation des résultats}
-Tous les résultats que nous mettons ici on été obtenu sur la même machine. Voici les tableaux des résultats :
+Tous les résultats que nous mettons ici ont été obtenus sur la même machine. De plus toute la mémoire utilisée pour stocker les matrices a été allouée dynamiquement. Voici les tableaux des résultats :
 \\
 \\
 \begin{center}
@@ -61,8 +61,15 @@ versions & itérations & temps lecture fichier & temps calcul pagerank & mémoir
 4 & 27 & 0.14 ms & 0.09 ms & 624 octets\\
 \hline	
 \end{tabular}
-\\
-\\
+
+\begin{center}
+\includegraphics[scale=0.39]{../histogrammes/matrice_petite_temps.png}
+\end{center}
+\begin{center}
+\includegraphics[scale=0.39]{../histogrammes/matrice_petite_memoire.png}
+\end{center}
+
+\vspace*{\stretch{1}}
 \begin{center}
 Pour une matrice de taille moyenne (59995 éléments non nuls)
 \end{center}
@@ -70,14 +77,22 @@ Pour une matrice de taille moyenne (59995 éléments non nuls)
 \hline
 versions & itérations & temps lecture fichier & temps calcul pagerank & mémoire allouée dynamiquement \\
 \hline
-1 & 15 & 34.621 ms & 11.241 ms & 1439968 octets \\
+r1 & 15 & 34.621 ms & 11.241 ms & 1439968 octets \\
 2 & 15 & 0 ms & 506.892 ms & 480048 octets\\
 3 & 15 & 33.248 ms & 28.571 ms & 1759912 octets\\
 4 & 9 & 33.531 ms & 20.494 ms & 1759912 octets\\
 \hline	
 \end{tabular}
-\\
-\\
+
+\begin{center}
+\includegraphics[scale=0.4]{../histogrammes/matrice_moyenne_temps.png}
+\end{center}
+\begin{center}
+\includegraphics[scale=0.4]{../histogrammes/matrice_moyenne_memoire.png}
+\end{center}
+\vspace*{\stretch{1}}
+
+\newpage
 \begin{center}
 Pour une matrice de taille grande (2312497 éléments non nuls)
 \end{center}
@@ -91,12 +106,18 @@ versions & itérations & temps lecture fichier & temps calcul pagerank & mémoir
 4 & 35 & 1382.416 ms & 7725.151 ms &  64520824 octets\\
 \hline	
 \end{tabular}
-\\
-\\
 
-Grâce à ces résultats on voit bien que la version 1 et 3 on sensiblement les mêmes performance (la version 1 étant un peu meilleure en temps et en mémoire pour le grandes matrice). Ces deux versions sont sensiblement les mêmes (seule la structure de données utilisée diffère). \\
-On voit également que la version 2 est bien meilleure que les autres en mémoire. Cependant elle devient très lente pour une grande matrice ce qui est problématique. \\
-Et pour finir la version 4 implémentant la méthode de Gauss Siedel descendant est bien meilleure en terme de nombre d'itérations que les autres et aussi en temps de calcul.
+\begin{center}
+\includegraphics[scale=0.4]{../histogrammes/matrice_grande_temps.png}
+\end{center}
+\begin{center}
+\includegraphics[scale=0.4]{../histogrammes/matrice_grande_memoire.png}
+\end{center}
+
+Grâce à ces résultats on voit bien que la version 1, 2 et 3 ont le même nombre d'itérations : ceci est normal car la méthode utilisée est la même. En revanche, pour la version 4, le nombre d'itérations est bien meilleur. On en déduit donc que la méthode de Gauss Siedel descendant améliore (diminue) réellement la quantité de calcul à effectuer pour que la matrice converge. \\
+Cependant en ce qui concerne le temps de calcul du pagerank, la version 1 reste la plus rapide. Ceci est probablement dû à une question d'implémentation car la structure de données utilisée est différente. De plus, les nombres correspondants au temps de calcul (et de lecture) ne doivent pas être pris de manière stricte. En effet ces temps peuvent beaucoup varier en fonction de l'occupation de l'ordinateur au moment auquel on exécute le programme. \\
+Cependant lorsqu'on observe la version 3 et la version 4 (qui utilisent la même structure de données), on remarque que la version 4 est toujours meilleure en terme de temps de calcul. La méthode de Gauss Siedel descendant améliore donc bien la quantité de calcul et aussi le temps de calcul. \\
+On voit également que la version 2 est bien meilleure que toutes les autres en terme de mémoire utilisée. Cependant elle devient très lente  pour une grande matrice dû à la quantité de lecture effectuée ce qui est problématique. \\
 
 \subsection{Conclusion}
 La méthode de Gauss Siedel descendant apporte réellement un gain de rapidité et de calcul pour le calcul du pagerank par rapport à la méthode des puissances. Ce projet a été très intéressant pour nous et réellement satisfaisant.
